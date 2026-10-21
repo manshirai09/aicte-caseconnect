@@ -1,0 +1,6 @@
+{
+  "name": "AICTE CaseConnect — Cross-Bureau Intelligence Platform",
+  "description": "Integrated institution intelligence and cross-bureau complaint case tracking platform for AICTE Regulation Bureau, PGRC, and affiliated cells.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
