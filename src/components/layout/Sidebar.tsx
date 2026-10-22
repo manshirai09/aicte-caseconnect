@@ -15,13 +15,20 @@ import {
   ChevronLeft,
   ChevronRight,
   HelpCircle,
+  User,
+  Scale,
+  Users,
+  MapPin,
+  FileText,
 } from 'lucide-react';
 
 export const Sidebar: React.FC<{ isCollapsed: boolean; setIsCollapsed: (val: boolean) => void }> = ({
   isCollapsed,
   setIsCollapsed,
 }) => {
-  const { currentView, setCurrentView, cases, suggestions, coordinations } = useApp();
+  const { currentView, setCurrentView, cases, suggestions, coordinations, currentUser, activeRole } = useApp();
+
+  const userRole = currentUser?.role || activeRole;
 
   const openCasesCount = cases.filter(c => c.status !== 'Resolved' && c.status !== 'Closed').length;
   const overdueCount = cases.filter(c => {
@@ -31,16 +38,49 @@ export const Sidebar: React.FC<{ isCollapsed: boolean; setIsCollapsed: (val: boo
   const pendingOverlapCount = suggestions.filter(s => s.status === 'Pending Review').length;
   const pendingCoordCount = coordinations.filter(c => c.status === 'Requested' || c.status === 'Information Requested').length;
 
-  const navItems: {
+  // Build role-aware navigation
+  const roleSpecificItem = (() => {
+    switch (userRole) {
+      case 'RB Officer':
+        return {
+          id: 'regulation' as AppView,
+          label: 'Regulation Workstation',
+          icon: <Scale className="w-4 h-4 shrink-0 text-amber-400" />,
+        };
+      case 'PGRC Officer':
+        return {
+          id: 'grievance' as AppView,
+          label: 'PGRC Grievance Desk',
+          icon: <Users className="w-4 h-4 shrink-0 text-cyan-400" />,
+        };
+      case 'Regional Officer':
+        return {
+          id: 'regional' as AppView,
+          label: 'Regional Workstation',
+          icon: <MapPin className="w-4 h-4 shrink-0 text-indigo-400" />,
+        };
+      case 'Student / Complainant':
+        return {
+          id: 'complainant' as AppView,
+          label: 'Grievance Portal',
+          icon: <FileText className="w-4 h-4 shrink-0 text-emerald-400" />,
+        };
+      default:
+        return null;
+    }
+  })();
+
+  const rawNavItems: {
     id: AppView;
     label: string;
     icon: React.ReactNode;
     badge?: number;
     badgeColor?: string;
   }[] = [
+    ...(roleSpecificItem ? [roleSpecificItem] : []),
     {
       id: 'dashboard',
-      label: 'Overview Dashboard',
+      label: userRole === 'Senior Management' ? 'Executive Oversight' : 'Overview Dashboard',
       icon: <LayoutDashboard className="w-4 h-4 shrink-0" />,
     },
     {
@@ -97,11 +137,24 @@ export const Sidebar: React.FC<{ isCollapsed: boolean; setIsCollapsed: (val: boo
       icon: <ShieldCheck className="w-4 h-4 shrink-0" />,
     },
     {
+      id: 'profile',
+      label: 'My Profile & Bureau',
+      icon: <User className="w-4 h-4 shrink-0" />,
+    },
+    {
       id: 'benchmark',
       label: 'Evaluation & Benchmark',
       icon: <FileCheck2 className="w-4 h-4 shrink-0" />,
     },
   ];
+
+  const navItems = rawNavItems.filter(item => {
+    if (userRole === 'Student / Complainant') {
+      // Citizens / Students only see citizen-authorized items
+      return ['complainant', 'institutions', 'institution360', 'profile'].includes(item.id);
+    }
+    return true;
+  });
 
   return (
     <aside

@@ -21,6 +21,9 @@ import { appData } from '../services/storage';
 
 export type AppView = 
   | 'dashboard'
+  | 'regulation'
+  | 'grievance'
+  | 'regional'
   | 'cases'
   | 'institutions'
   | 'institution360'
@@ -30,7 +33,11 @@ export type AppView =
   | 'analytics'
   | 'audit'
   | 'admin'
-  | 'benchmark';
+  | 'benchmark'
+  | 'profile'
+  | 'complainant'
+  | 'login'
+  | 'signup';
 
 export interface GlobalFilterState {
   dateRange: 'ALL' | '30D' | '90D' | '1Y';
@@ -50,6 +57,7 @@ interface ToastMessage {
 interface AppContextValue {
   currentView: AppView;
   setCurrentView: (view: AppView) => void;
+  redirectToRoleDashboard: (role?: UserRole) => void;
   activeRole: UserRole;
   setActiveRole: (role: UserRole) => void;
   cases: CaseRecord[];
@@ -66,10 +74,21 @@ interface AppContextValue {
   setIsAuthModalOpen: (open: boolean) => void;
   authModalMode: 'login' | 'signup';
   setAuthModalMode: (mode: 'login' | 'signup') => void;
-  login: (email: string, password?: string) => { success: boolean; error?: string };
-  signup: (params: Omit<UserProfile, 'id' | 'createdAt'>) => { success: boolean; error?: string };
+  login: (email: string, password?: string) => { success: boolean; user?: UserProfile; error?: string };
+  signup: (params: Omit<UserProfile, 'id' | 'createdAt' | 'accountStatus'> & { accountStatus?: any }) => { success: boolean; user?: UserProfile; error?: string; pendingApproval?: boolean };
   logout: () => void;
   switchUser: (userId: string) => void;
+  updateUserProfile: (updates: Partial<UserProfile>) => { success: boolean; error?: string };
+  changePassword: (currentPass: string, newPass: string) => { success: boolean; error?: string };
+  
+  // Admin User Management & Password Reset
+  adminApproveUser: (userId: string) => { success: boolean; error?: string };
+  adminRejectUser: (userId: string, reason: string) => { success: boolean; error?: string };
+  adminToggleUserStatus: (userId: string) => { success: boolean; error?: string };
+  adminUpdateUserRole: (userId: string, role: UserRole, bureau: BureauType) => { success: boolean; error?: string };
+  adminCreateOfficer: (params: Omit<UserProfile, 'id' | 'createdAt'>) => { success: boolean; user?: UserProfile; error?: string };
+  requestPasswordReset: (email: string) => { success: boolean; token?: string; error?: string };
+  resetPasswordWithToken: (email: string, token: string, newPass: string) => { success: boolean; error?: string };
 
   // Navigation & Drilldown
   selectedCaseId: string | null;
@@ -190,6 +209,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  const redirectToRoleDashboard = (role?: UserRole) => {
+    const targetRole = role || appData.getCurrentUser()?.role || activeRole;
+    switch (targetRole) {
+      case 'Senior Management':
+        setCurrentView('dashboard');
+        break;
+      case 'RB Officer':
+        setCurrentView('regulation');
+        break;
+      case 'PGRC Officer':
+        setCurrentView('grievance');
+        break;
+      case 'Regional Officer':
+        setCurrentView('regional');
+        break;
+      case 'Administrator':
+        setCurrentView('admin');
+        break;
+      case 'Student / Complainant':
+        setCurrentView('complainant');
+        break;
+      default:
+        setCurrentView('dashboard');
+    }
+  };
+
   const login = (email: string, password?: string) => {
     const res = appData.login(email, password);
     if (res.success && res.user) {
@@ -198,6 +243,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         title: 'Authentication Successful',
         message: `Welcome back, ${res.user.name} (${res.user.role}).`,
       });
+      setIsAuthModalOpen(false);
+      redirectToRoleDashboard(res.user.role);
     } else {
       addToast({
         type: 'error',
@@ -208,19 +255,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return res;
   };
 
-  const signup = (params: Omit<UserProfile, 'id' | 'createdAt'>) => {
+  const signup = (params: Omit<UserProfile, 'id' | 'createdAt' | 'accountStatus'> & { accountStatus?: any }) => {
     const res = appData.signup(params);
     if (res.success && res.user) {
-      addToast({
-        type: 'success',
-        title: 'Officer Registered',
-        message: `Account created for ${res.user.name} with role "${res.user.role}".`,
-      });
+      if (res.pendingApproval) {
+        addToast({
+          type: 'warning',
+          title: 'Officer Registration Submitted',
+          message: `Account for ${res.user.name} is PENDING APPROVAL by AICTE IT Cell. You will be notified upon verification.`,
+        });
+      } else {
+        addToast({
+          type: 'success',
+          title: 'Account Activated',
+          message: `Welcome, ${res.user.name}! Account registered successfully.`,
+        });
+        setIsAuthModalOpen(false);
+        redirectToRoleDashboard(res.user.role);
+      }
     } else {
       addToast({
         type: 'error',
         title: 'Registration Failed',
-        message: res.error || 'Could not complete officer registration.',
+        message: res.error || 'Could not complete registration.',
       });
     }
     return res;
@@ -233,6 +290,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       title: 'Signed Out',
       message: 'You have been signed out of AICTE CaseConnect.',
     });
+    setCurrentView('dashboard');
   };
 
   const switchUser = (userId: string) => {
@@ -245,6 +303,48 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         message: `Active session changed to ${targetUser.name} (${targetUser.role}).`,
       });
     }
+  };
+
+  const updateUserProfile = (updates: Partial<UserProfile>) => {
+    if (!currentUser) {
+      return { success: false, error: 'No active session found.' };
+    }
+    const res = appData.updateUserProfile(currentUser.id, updates);
+    if (res.success) {
+      addToast({
+        type: 'success',
+        title: 'Profile Updated',
+        message: 'Your official officer profile details have been saved.',
+      });
+    } else {
+      addToast({
+        type: 'error',
+        title: 'Update Failed',
+        message: res.error || 'Could not update profile details.',
+      });
+    }
+    return res;
+  };
+
+  const changePassword = (currentPass: string, newPass: string) => {
+    if (!currentUser) {
+      return { success: false, error: 'No active session found.' };
+    }
+    const res = appData.changePassword(currentUser.id, currentPass, newPass);
+    if (res.success) {
+      addToast({
+        type: 'success',
+        title: 'Password Changed',
+        message: 'Your account security credentials have been updated.',
+      });
+    } else {
+      addToast({
+        type: 'error',
+        title: 'Password Change Failed',
+        message: res.error || 'Password update failed.',
+      });
+    }
+    return res;
   };
 
   const viewInstitution360 = (instId: string) => {
@@ -438,11 +538,110 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  const adminApproveUser = (userId: string) => {
+    const res = appData.adminApproveUser(currentUser?.id || 'USR-ADMIN', userId);
+    if (res.success) {
+      addToast({
+        type: 'success',
+        title: 'Officer Account Approved',
+        message: 'Officer account has been authorized and granted system access.',
+      });
+    } else {
+      addToast({ type: 'error', title: 'Approval Failed', message: res.error || 'Failed to approve user.' });
+    }
+    return res;
+  };
+
+  const adminRejectUser = (userId: string, reason: string) => {
+    const res = appData.adminRejectUser(currentUser?.id || 'USR-ADMIN', userId, reason);
+    if (res.success) {
+      addToast({
+        type: 'warning',
+        title: 'Application Rejected',
+        message: 'Officer registration has been rejected and deactivated.',
+      });
+    } else {
+      addToast({ type: 'error', title: 'Action Failed', message: res.error || 'Failed to reject user.' });
+    }
+    return res;
+  };
+
+  const adminToggleUserStatus = (userId: string) => {
+    const res = appData.adminToggleUserStatus(currentUser?.id || 'USR-ADMIN', userId);
+    if (res.success) {
+      addToast({
+        type: 'info',
+        title: 'Account Status Toggled',
+        message: 'User status successfully modified.',
+      });
+    } else {
+      addToast({ type: 'error', title: 'Status Toggle Failed', message: res.error || 'Action failed.' });
+    }
+    return res;
+  };
+
+  const adminUpdateUserRole = (userId: string, role: UserRole, bureau: BureauType) => {
+    const res = appData.adminUpdateUserRole(currentUser?.id || 'USR-ADMIN', userId, role, bureau);
+    if (res.success) {
+      addToast({
+        type: 'success',
+        title: 'User Role & Bureau Updated',
+        message: `User permissions assigned to "${role}" (${bureau}).`,
+      });
+    } else {
+      addToast({ type: 'error', title: 'Role Update Failed', message: res.error || 'Failed to update role.' });
+    }
+    return res;
+  };
+
+  const adminCreateOfficer = (params: Omit<UserProfile, 'id' | 'createdAt'>) => {
+    const res = appData.adminCreateOfficer(params);
+    if (res.success && res.user) {
+      addToast({
+        type: 'success',
+        title: 'Officer Account Provisioned',
+        message: `Account created for ${res.user.name} (${res.user.role}).`,
+      });
+    } else {
+      addToast({ type: 'error', title: 'Provisioning Failed', message: res.error || 'Failed to create officer.' });
+    }
+    return res;
+  };
+
+  const requestPasswordReset = (email: string) => {
+    const res = appData.requestPasswordReset(email);
+    if (res.success) {
+      addToast({
+        type: 'info',
+        title: 'Reset Token Dispatched',
+        message: `Expiring security code: ${res.token} (Valid for 15 minutes)`,
+      });
+    } else {
+      addToast({ type: 'error', title: 'Password Reset Request Failed', message: res.error || 'Unknown error' });
+    }
+    return res;
+  };
+
+  const resetPasswordWithToken = (email: string, token: string, newPass: string) => {
+    const res = appData.resetPasswordWithToken(email, token, newPass);
+    if (res.success) {
+      addToast({
+        type: 'success',
+        title: 'Password Successfully Reset',
+        message: 'You can now sign in with your new password.',
+      });
+    } else {
+      addToast({ type: 'error', title: 'Reset Failed', message: res.error || 'Invalid reset token' });
+    }
+    return res;
+  };
+
   return (
     <AppContext.Provider
       value={{
         currentView,
         setCurrentView,
+        redirectToRoleDashboard,
         activeRole,
         setActiveRole,
         cases,
@@ -461,6 +660,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         signup,
         logout,
         switchUser,
+        updateUserProfile,
+        changePassword,
+        adminApproveUser,
+        adminRejectUser,
+        adminToggleUserStatus,
+        adminUpdateUserRole,
+        adminCreateOfficer,
+        requestPasswordReset,
+        resetPasswordWithToken,
         selectedCaseId,
         setSelectedCaseId,
         selectedInstitutionId,

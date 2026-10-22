@@ -10,7 +10,10 @@ export type UserRole =
   | 'RB Officer'
   | 'PGRC Officer'
   | 'Regional Officer'
-  | 'Administrator';
+  | 'Administrator'
+  | 'Student / Complainant';
+
+export type AccountStatus = 'ACTIVE' | 'PENDING_APPROVAL' | 'SUSPENDED';
 
 export type CaseStatus = 
   | 'New'
@@ -305,9 +308,26 @@ export interface UserProfile {
   bureau: BureauType;
   designation: string;
   employeeId: string;
+  accountStatus: AccountStatus;
+  phone?: string;
+  institutionName?: string;
+  institutionId?: string;
+  state?: string;
+  emailVerified?: boolean;
+  lastLoginAt?: string;
+  secondaryBureaus?: BureauType[];
+  assignedCommittees?: string[];
+  officeAddress?: string;
+  notificationsEnabled?: boolean;
   region?: string;
   password?: string;
   createdAt: string;
+}
+
+export interface PasswordResetToken {
+  token: string;
+  email: string;
+  expiresAt: number;
 }
 
 export interface AuthSession {

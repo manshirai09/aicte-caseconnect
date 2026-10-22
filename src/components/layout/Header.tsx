@@ -13,6 +13,7 @@ import {
   Building2,
   FileCheck2,
   Lock,
+  User,
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -42,6 +43,7 @@ export const Header: React.FC = () => {
     'PGRC Officer',
     'Regional Officer',
     'Administrator',
+    'Student / Complainant',
   ];
 
   return (
@@ -63,9 +65,6 @@ export const Header: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
                 AICTE CaseConnect
-              </span>
-              <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-blue-900 text-blue-300 border border-blue-700">
-                SIH26264 MVP
               </span>
             </div>
             <p className="text-[11px] text-slate-400 hidden sm:block">
@@ -196,8 +195,19 @@ export const Header: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Auth Actions */}
+                    {/* Auth & Profile Actions */}
                     <div className="border-t border-slate-100 px-2 pt-2 space-y-1">
+                      <button
+                        onClick={() => {
+                          setCurrentView('profile');
+                          setRoleMenuOpen(false);
+                        }}
+                        className="w-full text-left px-2 py-1.5 text-xs text-blue-900 bg-blue-50/70 hover:bg-blue-100/80 rounded flex items-center gap-1.5 transition font-semibold border border-blue-200/60"
+                      >
+                        <User className="w-3.5 h-3.5 text-blue-700" />
+                        <span>My Profile & Bureau Assignments</span>
+                      </button>
+
                       <button
                         onClick={() => {
                           setAuthModalMode('login');
@@ -253,19 +263,13 @@ export const Header: React.FC = () => {
           ) : (
             <div className="flex items-center gap-1.5">
               <button
-                onClick={() => {
-                  setAuthModalMode('login');
-                  setIsAuthModalOpen(true);
-                }}
+                onClick={() => setCurrentView('login')}
                 className="px-3 py-1 text-xs font-semibold rounded bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition"
               >
                 Sign In
               </button>
               <button
-                onClick={() => {
-                  setAuthModalMode('signup');
-                  setIsAuthModalOpen(true);
-                }}
+                onClick={() => setCurrentView('signup')}
                 className="px-3 py-1 text-xs font-bold rounded bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition"
               >
                 Sign Up

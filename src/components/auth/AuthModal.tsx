@@ -66,6 +66,9 @@ export const AuthModal: React.FC = () => {
     } else if (role === 'Administrator') {
       setSignupBureau('Regulation Bureau');
       setSignupDesignation('Systems & Security Administrator');
+    } else if (role === 'Student / Complainant') {
+      setSignupBureau('PGRC');
+      setSignupDesignation('Student / Citizen Complainant');
     }
   };
 
@@ -151,6 +154,11 @@ export const AuthModal: React.FC = () => {
       badge: 'System Admin',
       desc: 'IT systems management, matching algorithm weights tuning, and security logs auditing.',
       permissions: ['Algorithm Weight Calibration', 'SLA Threshold Governance', 'Audit Trail Export', 'Data Recovery & Reset'],
+    },
+    'Student / Complainant': {
+      badge: 'Citizen Complainant',
+      desc: 'Enables students, faculty, and citizens to lodge complaints and track resolution status.',
+      permissions: ['File Official Grievance', 'Track Investigation Progression', 'Receive Hearing Bulletins', 'Download Acknowledgement Slip'],
     },
   };
 

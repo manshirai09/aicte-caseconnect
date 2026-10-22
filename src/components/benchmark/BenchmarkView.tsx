@@ -44,7 +44,7 @@ export const BenchmarkView: React.FC = () => {
                 Cross-Bureau Matcher Evaluation & Benchmark Suite
               </h1>
               <span className="text-xs px-2 py-0.5 rounded bg-indigo-100 text-indigo-900 font-bold">
-                SIH26264 Evaluation Engine
+                AICTE Matcher Evaluation Engine
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">

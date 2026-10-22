@@ -13,7 +13,9 @@ import {
   Server,
   Lock,
   FileCheck2,
+  Users,
 } from 'lucide-react';
+import { AdminUserManagement } from './AdminUserManagement';
 
 export const SystemAdmin: React.FC = () => {
   const {
@@ -32,6 +34,7 @@ export const SystemAdmin: React.FC = () => {
     switchUser,
   } = useApp();
 
+  const [activeTab, setActiveTab] = useState<'users' | 'weights' | 'governance'>('users');
   const [localWeights, setLocalWeights] = useState<MatcherWeights>({ ...weights });
 
   const totalWeight =
@@ -119,9 +122,51 @@ export const SystemAdmin: React.FC = () => {
             <span>Reset to Factory Seed Data</span>
           </button>
         </div>
+
+        {/* Tab Selection Navigation */}
+        <div className="flex border-b border-slate-200 mt-4 gap-2">
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`px-4 py-2 text-xs font-bold border-b-2 transition flex items-center gap-1.5 ${
+              activeTab === 'users'
+                ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+                : 'border-transparent text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            <span>User Management & RBAC Clearance</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('weights')}
+            className={`px-4 py-2 text-xs font-bold border-b-2 transition flex items-center gap-1.5 ${
+              activeTab === 'weights'
+                ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+                : 'border-transparent text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Sliders className="w-4 h-4" />
+            <span>Matcher Algorithm Weights</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('governance')}
+            className={`px-4 py-2 text-xs font-bold border-b-2 transition flex items-center gap-1.5 ${
+              activeTab === 'governance'
+                ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+                : 'border-transparent text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Server className="w-4 h-4" />
+            <span>NIC Production Readiness Checklist</span>
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {activeTab === 'users' && <AdminUserManagement />}
+
+      {activeTab === 'weights' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Matcher Algorithm Weight Tuner */}
         <div className="lg:col-span-6 bg-white rounded-lg border border-slate-200 p-5 shadow-sm space-y-4 text-xs">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -308,133 +353,37 @@ export const SystemAdmin: React.FC = () => {
           </div>
         </div>
       </div>
+      )}
 
-      {/* Registered Officer Accounts (Role Model Database) */}
-      <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm space-y-4 text-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-          <div>
+      {activeTab === 'governance' && (
+        <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm space-y-3 text-xs">
+          <div className="border-b border-slate-100 pb-2">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-              <UserCheck className="w-4 h-4 text-blue-600" />
-              <span>Registered Officer Accounts & Role Assignments ({users.length})</span>
+              <Server className="w-4 h-4 text-slate-700" />
+              <span>AICTE Enterprise Production-Readiness Checklist</span>
             </h3>
-            <p className="text-slate-500 text-[11px] mt-0.5">
-              Managed officer profiles, designated bureaus, credentials, and active RBAC authorities
+            <p className="text-slate-500 text-[11px]">
+              Governance roadmap for deploying CaseConnect on National Informatics Centre (NIC) infrastructure
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                setAuthModalMode('login');
-                setIsAuthModalOpen(true);
-              }}
-              className="px-3 py-1.5 border border-slate-300 rounded bg-white hover:bg-slate-50 text-slate-700 font-semibold shadow-2xs"
-            >
-              Sign In with Account
-            </button>
-            <button
-              onClick={() => {
-                setAuthModalMode('signup');
-                setIsAuthModalOpen(true);
-              }}
-              className="px-3.5 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-2xs transition"
-            >
-              + Register New Officer (Role Model)
-            </button>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+            {productionChecklist.map((item, idx) => (
+              <div key={idx} className="p-3 bg-slate-50 rounded border border-slate-200 space-y-1">
+                <span className="font-bold text-slate-900 block">{item.task}</span>
+                <div className="text-[11px]">
+                  <span className="text-slate-500">Prototype Status:</span>{' '}
+                  <strong className="text-amber-700">{item.status}</strong>
+                </div>
+                <div className="text-[11px]">
+                  <span className="text-slate-500">Production Requirement:</span>{' '}
+                  <span className="text-slate-700">{item.prod}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-700 border-collapse">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
-              <tr>
-                <th className="py-2 px-3">Officer Name</th>
-                <th className="py-2 px-3">Role Model</th>
-                <th className="py-2 px-3">Bureau / Cell</th>
-                <th className="py-2 px-3">Official Email</th>
-                <th className="py-2 px-3">Employee ID</th>
-                <th className="py-2 px-3">Designation</th>
-                <th className="py-2 px-3 text-right">Session State</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {users.map(u => {
-                const isCurrent = currentUser?.id === u.id;
-                return (
-                  <tr key={u.id} className="hover:bg-slate-50/70 transition">
-                    <td className="py-2.5 px-3">
-                      <div className="font-bold text-slate-900">{u.name}</div>
-                      {u.region && (
-                        <span className="text-[10px] text-slate-500">{u.region} Region</span>
-                      )}
-                    </td>
-                    <td className="py-2.5 px-3 whitespace-nowrap">
-                      <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">
-                        {u.role}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-3 whitespace-nowrap font-medium text-slate-700">
-                      {u.bureau}
-                    </td>
-                    <td className="py-2.5 px-3 whitespace-nowrap font-mono text-[11px] text-blue-700">
-                      {u.email}
-                    </td>
-                    <td className="py-2.5 px-3 whitespace-nowrap font-mono text-[11px] text-slate-600">
-                      {u.employeeId}
-                    </td>
-                    <td className="py-2.5 px-3 whitespace-nowrap text-slate-600">
-                      {u.designation}
-                    </td>
-                    <td className="py-2.5 px-3 text-right whitespace-nowrap">
-                      {isCurrent ? (
-                        <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px] inline-flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>Active Session</span>
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => switchUser(u.id)}
-                          className="px-2.5 py-1 text-xs rounded border border-slate-300 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition font-medium"
-                        >
-                          Switch To
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Production Readiness Governance Checklist */}
-      <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm space-y-3 text-xs">
-        <div className="border-b border-slate-100 pb-2">
-          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-            <Server className="w-4 h-4 text-slate-700" />
-            <span>AICTE Enterprise Production-Readiness Checklist</span>
-          </h3>
-          <p className="text-slate-500 text-[11px]">
-            Governance roadmap for deploying CaseConnect on National Informatics Centre (NIC) infrastructure
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
-          {productionChecklist.map((item, idx) => (
-            <div key={idx} className="p-3 bg-slate-50 rounded border border-slate-200 space-y-1">
-              <span className="font-bold text-slate-900 block">{item.task}</span>
-              <div className="text-[11px]">
-                <span className="text-slate-500">Prototype Status:</span>{' '}
-                <strong className="text-amber-700">{item.status}</strong>
-              </div>
-              <div className="text-[11px]">
-                <span className="text-slate-500">Production Requirement:</span>{' '}
-                <span className="text-slate-700">{item.prod}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 };

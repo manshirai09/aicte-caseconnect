@@ -16,11 +16,17 @@ import {
   ChevronLeft,
   ChevronRight,
   Building,
+  X,
 } from 'lucide-react';
 
 export const CaseManagement: React.FC = () => {
   const {
     filteredCases,
+    cases,
+    institutions,
+    filters,
+    setFilters,
+    resetFilters,
     selectedCaseId,
     setSelectedCaseId,
     viewCaseDetails,
@@ -72,6 +78,26 @@ export const CaseManagement: React.FC = () => {
 
   const selectedCase = filteredCases.find(c => c.id === selectedCaseId);
 
+  const bureaus: BureauType[] = ['PGRC', 'Regulation Bureau', 'Approval Bureau', 'Legal Cell', 'Skill Development'];
+  const statuses: CaseStatus[] = [
+    'New',
+    'Under Review',
+    'In Progress',
+    'Awaiting Information',
+    'Coordination Requested',
+    'Escalated',
+    'Resolved',
+    'Closed',
+  ];
+  const regions = ['Northern', 'Western', 'Southern', 'Eastern', 'North-Western', 'Central'];
+
+  const hasActiveFilters = 
+    filters.dateRange !== 'ALL' ||
+    filters.bureau !== 'ALL' ||
+    filters.region !== 'ALL' ||
+    filters.status !== 'ALL' ||
+    filters.institutionId !== 'ALL';
+
   return (
     <div className="p-6 space-y-4">
       {/* Top Action Bar */}
@@ -97,6 +123,79 @@ export const CaseManagement: React.FC = () => {
             <Plus className="w-4 h-4" />
             <span>Register New Case</span>
           </button>
+        </div>
+      </div>
+
+      {/* Integrated Case Filters Toolbar */}
+      <div className="bg-white rounded-lg border border-slate-200 p-3 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 text-slate-500 font-semibold mr-1">
+            <Filter className="w-3.5 h-3.5 text-slate-400" />
+            <span>Filter Docket:</span>
+          </div>
+
+          {/* Bureau Filter */}
+          <select
+            value={filters.bureau}
+            onChange={e => setFilters(prev => ({ ...prev, bureau: e.target.value as any }))}
+            className="border border-slate-300 rounded px-2.5 py-1.5 bg-slate-50 hover:bg-white text-slate-700 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition"
+          >
+            <option value="ALL">All Bureaus</option>
+            {bureaus.map(b => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+
+          {/* Status Filter */}
+          <select
+            value={filters.status}
+            onChange={e => setFilters(prev => ({ ...prev, status: e.target.value as any }))}
+            className="border border-slate-300 rounded px-2.5 py-1.5 bg-slate-50 hover:bg-white text-slate-700 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition"
+          >
+            <option value="ALL">All Statuses</option>
+            {statuses.map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+
+          {/* Region Filter */}
+          <select
+            value={filters.region}
+            onChange={e => setFilters(prev => ({ ...prev, region: e.target.value }))}
+            className="border border-slate-300 rounded px-2.5 py-1.5 bg-slate-50 hover:bg-white text-slate-700 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition"
+          >
+            <option value="ALL">All Regions</option>
+            {regions.map(r => (
+              <option key={r} value={r}>{r} Region</option>
+            ))}
+          </select>
+
+          {/* Institution Filter */}
+          <select
+            value={filters.institutionId}
+            onChange={e => setFilters(prev => ({ ...prev, institutionId: e.target.value }))}
+            className="border border-slate-300 rounded px-2.5 py-1.5 bg-slate-50 hover:bg-white text-slate-700 text-xs max-w-xs truncate focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition"
+          >
+            <option value="ALL">All Institutions</option>
+            {institutions.map(inst => (
+              <option key={inst.id} value={inst.id}>{inst.name} ({inst.aictePermanentId})</option>
+            ))}
+          </select>
+
+          {/* Reset Filters */}
+          {hasActiveFilters && (
+            <button
+              onClick={resetFilters}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 font-medium border border-rose-200 transition"
+            >
+              <X className="w-3 h-3" />
+              <span>Reset</span>
+            </button>
+          )}
+        </div>
+
+        <div className="text-slate-500 text-xs font-medium">
+          Showing <span className="font-bold text-slate-800">{filteredCases.length}</span> of {cases.length} cases
         </div>
       </div>
 

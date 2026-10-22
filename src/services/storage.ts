@@ -15,6 +15,7 @@ import {
   CaseStatus,
   CasePriority,
   UserProfile,
+  AccountStatus,
 } from '../types';
 import {
   INITIAL_CASES,
@@ -37,8 +38,20 @@ export const INITIAL_USERS: UserProfile[] = [
     bureau: 'Regulation Bureau',
     designation: 'Executive Chairman & Appellate Authority',
     employeeId: 'AICTE-EXEC-001',
+    accountStatus: 'ACTIVE',
+    phone: '+91 11 2958 1000',
+    secondaryBureaus: ['PGRC', 'Approval Bureau', 'Legal Cell'],
+    assignedCommittees: [
+      'Apex Council for Technical Education',
+      'National Scrutiny Board',
+      'Inter-Bureau Coordination Taskforce'
+    ],
+    officeAddress: 'AICTE Headquarters, Room 401, Nelson Mandela Marg, Vasant Kunj, New Delhi - 110070',
+    notificationsEnabled: true,
+    emailVerified: true,
     password: 'password123',
     createdAt: '2026-01-01T00:00:00Z',
+    lastLoginAt: '2026-10-22T08:15:00Z',
   },
   {
     id: 'USR-RB-01',
@@ -48,8 +61,19 @@ export const INITIAL_USERS: UserProfile[] = [
     bureau: 'Regulation Bureau',
     designation: 'Director (Regulation Bureau)',
     employeeId: 'AICTE-RB-014',
+    accountStatus: 'ACTIVE',
+    phone: '+91 11 2958 1024',
+    secondaryBureaus: ['Approval Bureau', 'Legal Cell'],
+    assignedCommittees: [
+      'Standing Grievance Scrutiny Committee',
+      'Expert Inspection Verification Panel'
+    ],
+    officeAddress: 'Regulation Bureau, 3rd Floor, AICTE HQ, Vasant Kunj, New Delhi',
+    notificationsEnabled: true,
+    emailVerified: true,
     password: 'password123',
     createdAt: '2026-01-05T00:00:00Z',
+    lastLoginAt: '2026-10-22T09:45:00Z',
   },
   {
     id: 'USR-PGRC-01',
@@ -59,8 +83,19 @@ export const INITIAL_USERS: UserProfile[] = [
     bureau: 'PGRC',
     designation: 'Chief Public Grievance Redressal Officer',
     employeeId: 'AICTE-PGRC-007',
+    accountStatus: 'ACTIVE',
+    phone: '+91 11 2958 1088',
+    secondaryBureaus: ['Regulation Bureau'],
+    assignedCommittees: [
+      'National Anti-Ragging Monitoring Cell',
+      'Student & Faculty Ombudsman Council'
+    ],
+    officeAddress: 'Public Grievance Cell, Ground Floor, AICTE HQ, Vasant Kunj, New Delhi',
+    notificationsEnabled: true,
+    emailVerified: true,
     password: 'password123',
     createdAt: '2026-01-10T00:00:00Z',
+    lastLoginAt: '2026-10-22T10:10:00Z',
   },
   {
     id: 'USR-REGIONAL-01',
@@ -70,9 +105,20 @@ export const INITIAL_USERS: UserProfile[] = [
     bureau: 'Regulation Bureau',
     designation: 'Regional Director (Western Region)',
     employeeId: 'AICTE-WRO-022',
+    accountStatus: 'ACTIVE',
     region: 'Western',
+    phone: '+91 22 2285 5412',
+    secondaryBureaus: ['PGRC', 'Approval Bureau'],
+    assignedCommittees: [
+      'Western Regional Hearing Committee (Maharashtra & Goa)',
+      'Surprise Vigilance Squad'
+    ],
+    officeAddress: 'AICTE Western Regional Office, Industrial Assurance Building, Churchgate, Mumbai - 400020',
+    notificationsEnabled: true,
+    emailVerified: true,
     password: 'password123',
     createdAt: '2026-02-01T00:00:00Z',
+    lastLoginAt: '2026-10-22T07:50:00Z',
   },
   {
     id: 'USR-ADMIN-01',
@@ -82,8 +128,56 @@ export const INITIAL_USERS: UserProfile[] = [
     bureau: 'Regulation Bureau',
     designation: 'Chief Systems & Security Administrator',
     employeeId: 'AICTE-IT-003',
+    accountStatus: 'ACTIVE',
+    phone: '+91 11 2958 1199',
+    secondaryBureaus: ['PGRC', 'Approval Bureau', 'Legal Cell', 'Skill Development'],
+    assignedCommittees: [
+      'Digital Governance & NIC Integration Taskforce',
+      'Cybersecurity & Audit Compliance Team'
+    ],
+    officeAddress: 'IT & e-Governance Cell, 2nd Floor, AICTE HQ, New Delhi',
+    notificationsEnabled: true,
+    emailVerified: true,
     password: 'password123',
     createdAt: '2026-01-01T00:00:00Z',
+    lastLoginAt: '2026-10-22T11:00:00Z',
+  },
+  {
+    id: 'USR-STUDENT-01',
+    name: 'Aaditya Verma',
+    email: 'student.aaditya@gmail.com',
+    role: 'Student / Complainant',
+    bureau: 'PGRC',
+    designation: 'B.Tech Student (Mechanical Engg, Final Year)',
+    employeeId: 'STU-2026-8819',
+    accountStatus: 'ACTIVE',
+    institutionName: 'Sunrise Institute of Technology',
+    institutionId: '1-XXXXXXX',
+    state: 'Maharashtra',
+    region: 'Western',
+    phone: '+91 98765 43210',
+    notificationsEnabled: true,
+    emailVerified: true,
+    password: 'password123',
+    createdAt: '2026-03-01T00:00:00Z',
+    lastLoginAt: '2026-10-22T09:20:00Z',
+  },
+  {
+    id: 'USR-PENDING-01',
+    name: 'Er. Sunil S. Mehta',
+    email: 'sunil.mehta@polytechnic.edu.in',
+    role: 'RB Officer',
+    bureau: 'Regulation Bureau',
+    designation: 'Applicant for Bureau Inspection Scrutiny',
+    employeeId: 'APP-2026-004',
+    accountStatus: 'PENDING_APPROVAL',
+    institutionName: 'Maharashtra State Board of Technical Education',
+    region: 'Western',
+    phone: '+91 98220 12345',
+    notificationsEnabled: false,
+    emailVerified: true,
+    password: 'password123',
+    createdAt: '2026-10-20T14:30:00Z',
   },
 ];
 
@@ -237,31 +331,77 @@ export class AppDataService {
     const trimmedEmail = email.trim().toLowerCase();
     const user = this.users.find(u => u.email.toLowerCase() === trimmedEmail);
     if (!user) {
-      return { success: false, error: 'No official AICTE account found with this email ID.' };
-    }
-    if (password && user.password && user.password !== password) {
-      return { success: false, error: 'Incorrect credentials provided.' };
+      return { success: false, error: 'No AICTE CaseConnect account found with this email ID.' };
     }
 
+    if (password && user.password && user.password !== password) {
+      return { success: false, error: 'Incorrect credentials provided. Please check your password.' };
+    }
+
+    // Role Model Status Check
+    if (user.accountStatus === 'PENDING_APPROVAL') {
+      return {
+        success: false,
+        error: 'Your officer account registration is PENDING APPROVAL by AICTE IT Cell Administrator. Access will be enabled once verified.',
+      };
+    }
+
+    if (user.accountStatus === 'SUSPENDED') {
+      return {
+        success: false,
+        error: 'This account has been deactivated or suspended by AICTE Administration. Please contact IT Helpdesk.',
+      };
+    }
+
+    user.lastLoginAt = new Date().toISOString();
     this.setCurrentUser(user);
+
+    this.logAudit({
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      userBureau: user.bureau,
+      actionType: 'CONFIG_UPDATE',
+      targetEntity: 'System',
+      targetId: user.id,
+      description: `Successful login for ${user.name} (${user.role} - ${user.bureau})`,
+    });
+
     return { success: true, user };
   }
 
-  public signup(params: Omit<UserProfile, 'id' | 'createdAt'>): { success: boolean; user?: UserProfile; error?: string } {
+  public signup(params: Omit<UserProfile, 'id' | 'createdAt' | 'accountStatus'> & { accountStatus?: AccountStatus }): {
+    success: boolean;
+    user?: UserProfile;
+    error?: string;
+    pendingApproval?: boolean;
+  } {
     const trimmedEmail = params.email.trim().toLowerCase();
     const exists = this.users.some(u => u.email.toLowerCase() === trimmedEmail);
     if (exists) {
-      return { success: false, error: 'An officer account with this email address already exists.' };
+      return { success: false, error: 'An account with this email address already exists on AICTE CaseConnect.' };
     }
+
+    // RBAC Rule: Public signup can only immediately activate Student / Complainant accounts.
+    // Privileged officer accounts require administrative scrutiny and are placed in PENDING_APPROVAL.
+    const isPublicComplainant = params.role === 'Student / Complainant';
+    const initialStatus: AccountStatus = params.accountStatus || (isPublicComplainant ? 'ACTIVE' : 'PENDING_APPROVAL');
 
     const newUser: UserProfile = {
       ...params,
-      id: `USR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: isPublicComplainant
+        ? `USR-STU-${Date.now()}`
+        : `USR-APP-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      accountStatus: initialStatus,
       createdAt: new Date().toISOString(),
+      lastLoginAt: isPublicComplainant ? new Date().toISOString() : undefined,
     };
 
     this.users.unshift(newUser);
-    this.setCurrentUser(newUser);
+
+    if (initialStatus === 'ACTIVE') {
+      this.setCurrentUser(newUser);
+    }
 
     this.logAudit({
       userId: newUser.id,
@@ -271,11 +411,224 @@ export class AppDataService {
       actionType: 'CONFIG_UPDATE',
       targetEntity: 'System',
       targetId: newUser.id,
-      description: `New officer account created and registered: ${newUser.name} as ${newUser.role}`,
+      description: isPublicComplainant
+        ? `New Student/Complainant registered and activated: ${newUser.name}`
+        : `New Officer registration submitted for approval: ${newUser.name} as ${newUser.role} (${initialStatus})`,
+    });
+
+    this.persist();
+    return {
+      success: true,
+      user: newUser,
+      pendingApproval: initialStatus === 'PENDING_APPROVAL',
+    };
+  }
+
+  // --- Admin User Management Methods ---
+  public adminApproveUser(adminId: string, targetUserId: string): { success: boolean; error?: string } {
+    const admin = this.users.find(u => u.id === adminId) || this.currentUser;
+    if (admin && admin.role !== 'Administrator') {
+      return { success: false, error: 'Unauthorized: Only System Administrators can approve accounts.' };
+    }
+
+    const targetUser = this.users.find(u => u.id === targetUserId);
+    if (!targetUser) return { success: false, error: 'User account not found.' };
+
+    targetUser.accountStatus = 'ACTIVE';
+
+    this.logAudit({
+      userId: admin?.id || 'USR-ADMIN',
+      userName: admin?.name || 'Administrator',
+      userRole: 'Administrator',
+      userBureau: 'Regulation Bureau',
+      actionType: 'CONFIG_UPDATE',
+      targetEntity: 'System',
+      targetId: targetUser.id,
+      description: `Administrator approved officer account for ${targetUser.name} (${targetUser.role})`,
+    });
+
+    this.persist();
+    return { success: true };
+  }
+
+  public adminRejectUser(adminId: string, targetUserId: string, reason: string): { success: boolean; error?: string } {
+    const admin = this.users.find(u => u.id === adminId) || this.currentUser;
+    if (admin && admin.role !== 'Administrator') {
+      return { success: false, error: 'Unauthorized: Only System Administrators can reject accounts.' };
+    }
+
+    const targetUser = this.users.find(u => u.id === targetUserId);
+    if (!targetUser) return { success: false, error: 'User account not found.' };
+
+    targetUser.accountStatus = 'SUSPENDED';
+
+    this.logAudit({
+      userId: admin?.id || 'USR-ADMIN',
+      userName: admin?.name || 'Administrator',
+      userRole: 'Administrator',
+      userBureau: 'Regulation Bureau',
+      actionType: 'CONFIG_UPDATE',
+      targetEntity: 'System',
+      targetId: targetUser.id,
+      description: `Administrator rejected officer registration for ${targetUser.name}. Reason: ${reason}`,
+    });
+
+    this.persist();
+    return { success: true };
+  }
+
+  public adminToggleUserStatus(adminId: string, targetUserId: string): { success: boolean; error?: string } {
+    const targetUser = this.users.find(u => u.id === targetUserId);
+    if (!targetUser) return { success: false, error: 'User account not found.' };
+
+    // Prevent deactivating the last active administrator
+    if (targetUser.role === 'Administrator' && targetUser.accountStatus === 'ACTIVE') {
+      const activeAdmins = this.users.filter(u => u.role === 'Administrator' && u.accountStatus === 'ACTIVE');
+      if (activeAdmins.length <= 1) {
+        return { success: false, error: 'Security constraint: Cannot deactivate the last active System Administrator.' };
+      }
+    }
+
+    const newStatus: AccountStatus = targetUser.accountStatus === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
+    targetUser.accountStatus = newStatus;
+
+    this.logAudit({
+      userId: adminId,
+      userName: this.currentUser?.name || 'Administrator',
+      userRole: 'Administrator',
+      userBureau: 'Regulation Bureau',
+      actionType: 'CONFIG_UPDATE',
+      targetEntity: 'System',
+      targetId: targetUser.id,
+      description: `Account status for ${targetUser.name} changed to ${newStatus}`,
+    });
+
+    this.persist();
+    return { success: true };
+  }
+
+  public adminUpdateUserRole(adminId: string, targetUserId: string, newRole: UserRole, newBureau: BureauType): { success: boolean; error?: string } {
+    const targetUser = this.users.find(u => u.id === targetUserId);
+    if (!targetUser) return { success: false, error: 'User account not found.' };
+
+    // Prevent demoting the last active administrator
+    if (targetUser.role === 'Administrator' && newRole !== 'Administrator') {
+      const activeAdmins = this.users.filter(u => u.role === 'Administrator' && u.accountStatus === 'ACTIVE');
+      if (activeAdmins.length <= 1) {
+        return { success: false, error: 'Security constraint: Cannot reassign the role of the last active System Administrator.' };
+      }
+    }
+
+    const prevRole = targetUser.role;
+    targetUser.role = newRole;
+    targetUser.bureau = newBureau;
+
+    if (this.currentUser && this.currentUser.id === targetUserId) {
+      this.currentUser.role = newRole;
+      this.currentUser.bureau = newBureau;
+      this.activeRole = newRole;
+    }
+
+    this.logAudit({
+      userId: adminId,
+      userName: this.currentUser?.name || 'Administrator',
+      userRole: 'Administrator',
+      userBureau: 'Regulation Bureau',
+      actionType: 'CONFIG_UPDATE',
+      targetEntity: 'System',
+      targetId: targetUser.id,
+      description: `Administrator modified role for ${targetUser.name} from ${prevRole} to ${newRole} (${newBureau})`,
+    });
+
+    this.persist();
+    return { success: true };
+  }
+
+  public adminCreateOfficer(params: Omit<UserProfile, 'id' | 'createdAt'>): { success: boolean; user?: UserProfile; error?: string } {
+    const trimmedEmail = params.email.trim().toLowerCase();
+    const exists = this.users.some(u => u.email.toLowerCase() === trimmedEmail);
+    if (exists) {
+      return { success: false, error: 'An account with this email address already exists.' };
+    }
+
+    const newUser: UserProfile = {
+      ...params,
+      id: `USR-PROV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      accountStatus: 'ACTIVE',
+      createdAt: new Date().toISOString(),
+      emailVerified: true,
+    };
+
+    this.users.unshift(newUser);
+
+    this.logAudit({
+      userId: this.currentUser?.id || 'USR-ADMIN',
+      userName: this.currentUser?.name || 'Administrator',
+      userRole: 'Administrator',
+      userBureau: 'Regulation Bureau',
+      actionType: 'CONFIG_UPDATE',
+      targetEntity: 'System',
+      targetId: newUser.id,
+      description: `Administrator directly provisioned authorized officer account for ${newUser.name} as ${newUser.role}`,
     });
 
     this.persist();
     return { success: true, user: newUser };
+  }
+
+  // --- Password Reset Simulation ---
+  public requestPasswordReset(email: string): { success: boolean; token?: string; error?: string } {
+    const user = this.users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+    if (!user) {
+      return { success: false, error: 'No account registered with that email address.' };
+    }
+
+    const token = `AICTE-RESET-${Math.floor(100000 + Math.random() * 900000)}`;
+    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 mins
+
+    this.logAudit({
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      userBureau: user.bureau,
+      actionType: 'CONFIG_UPDATE',
+      targetEntity: 'System',
+      targetId: user.id,
+      description: `Password reset token generated for ${user.email} (Expires in 15m)`,
+    });
+
+    return { success: true, token };
+  }
+
+  public resetPasswordWithToken(email: string, token: string, newPassword: string): { success: boolean; error?: string } {
+    const user = this.users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+    if (!user) {
+      return { success: false, error: 'No account registered with that email address.' };
+    }
+
+    if (!token || !token.startsWith('AICTE-RESET-')) {
+      return { success: false, error: 'Invalid or expired password reset token.' };
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      return { success: false, error: 'New password must be at least 6 characters in length.' };
+    }
+
+    user.password = newPassword;
+
+    this.logAudit({
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      userBureau: user.bureau,
+      actionType: 'CONFIG_UPDATE',
+      targetEntity: 'System',
+      targetId: user.id,
+      description: `Password successfully updated via reset token for ${user.email}`,
+    });
+
+    this.persist();
+    return { success: true };
   }
 
   public logout() {
@@ -293,6 +646,89 @@ export class AppDataService {
     }
     this.currentUser = null;
     this.persist();
+  }
+
+  public updateUserProfile(userId: string, updates: Partial<UserProfile>): { success: boolean; error?: string } {
+    const user = this.users.find(u => u.id === userId);
+    if (!user) {
+      return { success: false, error: 'Officer profile not found.' };
+    }
+
+    if (updates.email && updates.email.toLowerCase() !== user.email.toLowerCase()) {
+      const emailTaken = this.users.some(u => u.id !== userId && u.email.toLowerCase() === updates.email?.toLowerCase());
+      if (emailTaken) {
+        return { success: false, error: 'That official email address is already in use by another officer.' };
+      }
+    }
+
+    const previousName = user.name;
+    const previousDesignation = user.designation;
+
+    Object.assign(user, {
+      name: updates.name !== undefined ? updates.name : user.name,
+      email: updates.email !== undefined ? updates.email : user.email,
+      designation: updates.designation !== undefined ? updates.designation : user.designation,
+      phone: updates.phone !== undefined ? updates.phone : user.phone,
+      region: updates.region !== undefined ? updates.region : user.region,
+      officeAddress: updates.officeAddress !== undefined ? updates.officeAddress : user.officeAddress,
+      notificationsEnabled: updates.notificationsEnabled !== undefined ? updates.notificationsEnabled : user.notificationsEnabled,
+      secondaryBureaus: updates.secondaryBureaus !== undefined ? updates.secondaryBureaus : user.secondaryBureaus,
+      assignedCommittees: updates.assignedCommittees !== undefined ? updates.assignedCommittees : user.assignedCommittees,
+    });
+
+    if (this.currentUser && this.currentUser.id === userId) {
+      this.currentUser = { ...user };
+    }
+
+    this.logAudit({
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      userBureau: user.bureau,
+      actionType: 'CONFIG_UPDATE',
+      targetEntity: 'System',
+      targetId: user.id,
+      description: `Officer profile updated for ${user.name} (${user.designation})`,
+      previousValue: `${previousName} - ${previousDesignation}`,
+      newValue: `${user.name} - ${user.designation}`,
+    });
+
+    this.persist();
+    return { success: true };
+  }
+
+  public changePassword(userId: string, currentPass: string, newPass: string): { success: boolean; error?: string } {
+    const user = this.users.find(u => u.id === userId);
+    if (!user) {
+      return { success: false, error: 'Officer profile not found.' };
+    }
+
+    if (user.password && user.password !== currentPass) {
+      return { success: false, error: 'Current password does not match records.' };
+    }
+
+    if (!newPass || newPass.length < 6) {
+      return { success: false, error: 'New password must be at least 6 characters in length.' };
+    }
+
+    user.password = newPass;
+    if (this.currentUser && this.currentUser.id === userId) {
+      this.currentUser.password = newPass;
+    }
+
+    this.logAudit({
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      userBureau: user.bureau,
+      actionType: 'CONFIG_UPDATE',
+      targetEntity: 'System',
+      targetId: user.id,
+      description: `Security credentials updated: Password successfully changed for ${user.name}`,
+    });
+
+    this.persist();
+    return { success: true };
   }
 
   // --- Getters ---
